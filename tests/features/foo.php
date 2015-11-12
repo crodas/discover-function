@@ -1,22 +1,22 @@
 <?php
 
 /** @foo xxx */
-function fnc()
+function fnc($v = true)
 {
-    return true;
+    return $v;
 }
 
 class foobar
 {
     /** @foo yyy1 */
-    public static function yyy()
+    public static function yyy($v = true)
     {
-        return true;
+        return $v;
     }
 
     /** @foo yyy */
-    public function xxx()
+    public function xxx($v = true)
     {
-        return true;
+        return $v;
     }
 }

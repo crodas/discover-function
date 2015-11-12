@@ -61,15 +61,11 @@ class TFunction
         }
         $arguments = func_get_args();
         $function  = $this->function;
-        if (is_array($function)) {
-            if ($this->static) {
-                return $function[0]::$function[1]($arguments);
-            }
-            $object = new $function[0];
-            return $object->{$function[1]}($arguments);
+        if (is_array($function) && !$this->static) {
+            $function[0] = new $function[0];
         }
 
-        return $function($arguments);
+        return call_user_func_array($function, $arguments);
     }
 
     public function __construct($file, $function, $static = false)
