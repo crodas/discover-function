@@ -124,7 +124,7 @@ namespace {
             foreach(array_unique($files) as $file) {
 
                 $this->context['file'] = $file;
-                echo "    if (!is_readable(";
+                echo "    if (!is_" . (is_file($file) ? 'file': 'dir') . "(";
                 var_export($file);
                 echo ") || " . (filemtime($file)) . " < filemtime(";
                 var_export($file);

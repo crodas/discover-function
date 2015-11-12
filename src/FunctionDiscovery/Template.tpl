@@ -3,7 +3,7 @@
 $functions = array();
 
 @foreach (array_unique($files) as $file)
-    if (!is_readable({{@$file}}) || {{filemtime($file)}} < filemtime({{@$file}})) {
+    if (!is_{{is_file($file) ? 'file': 'dir'}}({{@$file}}) || {{filemtime($file)}} < filemtime({{@$file}})) {
         return false;
     }
 @end

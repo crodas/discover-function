@@ -31,7 +31,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
         }, $cached);
         $this->assertTrue($cached);
         foreach ($functions as $function) {
-            $this->assertTrue($function('foobar'));
+            $this->assertTrue($function());
+            $this->assertEquals($function('foobar'), 'foobar');
         }
     }
 
