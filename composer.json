@@ -1,0 +1,26 @@
+{
+    "name": "crodas/function-discovery",
+    "description": "Discover and remember functions in the filesystem using annotations",
+    "type": "library",
+    "require": {
+        "crodas/notoj": "^1.0",
+        "crodas/file-util": "^0.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "classmap": ["src/FunctionDiscovery.php"],
+        "psr-0": {
+            "FunctionDiscovery": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Cesar Rodas",
+            "email": "crodas@php.net"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require-dev": {
+        "crodas/simple-view-engine": "^0.1"
+    }
+}
