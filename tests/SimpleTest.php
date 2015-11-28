@@ -41,6 +41,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
         }
         $this->assertTrue($functions['yyy1']->hasAnnotation('@auth'));
         $this->assertTrue($functions['yyy']->hasAnnotation('auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('@auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('auth'));
     }
 
     /**
