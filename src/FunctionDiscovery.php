@@ -89,6 +89,16 @@ class FunctionDiscovery
             if ($filter($wrapper, $annotation) === false && !$wrapper->getName()) {
                 continue;
             }
+
+            $annotations = [];
+            foreach ($annotation->getParent() as $annotation) {
+                $annotations[] = [
+                    strtolower($annotation->getName()),
+                    $annotation->getArgs()
+                ];
+            }
+            $wrapper->setAnnotations($annotations);
+
             $functions[$wrapper->getName()] = $wrapper;
             $files[] = dirname($function->getFile());
             $files[] = $function->getFile();

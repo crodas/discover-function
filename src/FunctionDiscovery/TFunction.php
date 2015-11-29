@@ -42,16 +42,50 @@ class TFunction
     protected $file;
     protected $static;
     protected $function;
+    protected $annotations = array();
     protected $name;
 
     public static function __set_state(Array $state)
     {
         $object = new self($state['file'], $state['function'], $state['static']);
-        foreach (array('name') as $property) {
+        foreach (array('name', 'annotations') as $property) {
             $object->$property = $state[$property];
         }
 
         return $object;
+    }
+
+    public function setAnnotations(Array $annotations)
+    {
+        $this->annotations = $annotations;
+        return $this;
+    }
+
+    public function getAnnotation($name = '') {
+        if (empty($name)) {
+            return $this->annotations;
+        }
+        $name = str_replace('@', '', strtolower($name));
+        foreach ($this->annotations as $annotation) {
+            if ($annotation[0] === $name) {
+                return $annotation;
+            }
+        }
+
+        return null;
+    }
+
+
+    public function hasAnnotation($name)
+    {
+        $name = str_replace('@', '', strtolower($name));
+        foreach ($this->annotations as $annotation) {
+            if ($annotation[0] === $name) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function __invoke()

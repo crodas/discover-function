@@ -32,8 +32,17 @@ class SimpleTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($cached);
         foreach ($functions as $function) {
             $this->assertTrue($function());
+            foreach (['foo', 'FOO', 'FoO'] as $ann) {
+                $this->assertTrue($function->hasAnnotation($ann));
+                $this->assertTrue($function->hasAnnotation('@' . $ann));
+                $this->assertFalse($function->hasAnnotation('@' . $ann . $ann));
+            }
             $this->assertEquals($function('foobar'), 'foobar');
         }
+        $this->assertTrue($functions['yyy1']->hasAnnotation('@auth'));
+        $this->assertTrue($functions['yyy']->hasAnnotation('auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('@auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('auth'));
     }
 
     /**
