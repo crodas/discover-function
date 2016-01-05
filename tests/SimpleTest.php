@@ -59,8 +59,14 @@ class SimpleTest extends PHPUnit_Framework_TestCase
             $function->setName($name);
         }, $cached);
         $this->assertTrue($cached);
-
         touch(__DIR__ . '/features/' . uniqid(true) . 'php');
+    }
+
+    /**
+     *  @dependsOn testCacheInvalidationDirectory
+     */
+    public function testCacheInvalidDirectoryFalse()
+    {
         $cache = new FunctionDiscovery(__DIR__, '@foo');
         $functions = $cache->filter(function($function, $annotation) {
             $name = $annotation->getArg();
@@ -88,6 +94,13 @@ class SimpleTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($cached);
 
         touch(__DIR__ . '/features/foo.php');
+    }
+
+    /**
+     *  @dependsOn testCacheInvalidation
+     */
+    public function testCacheInvalidationFalse()
+    {
         $cache = new FunctionDiscovery(__DIR__, '@foo');
         $functions = $cache->filter(function($function, $annotation) {
             $name = $annotation->getArg();
