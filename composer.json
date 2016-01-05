@@ -3,8 +3,8 @@
     "description": "Discover and remember functions in the filesystem using annotations",
     "type": "library",
     "require": {
-        "crodas/notoj": "^1.0",
-        "crodas/file-util": "^0.1"
+        "crodas/notoj": ">= 1.2",
+        "crodas/file-util": "^0.2"
     },
     "version": "v0.4.1",
     "license": "BSD-4-Clause",

@@ -45,6 +45,7 @@ class FunctionDiscovery
     protected $annotations;
     protected $tmp;
     protected $dirs;
+    protected static $cache = array();
 
     public function __construct($directories, $annotations, $temporary = null)
     {
@@ -56,6 +57,7 @@ class FunctionDiscovery
     public function wipeCache()
     {
         File::write($this->tmp, '');
+        self::$cache[$this->tmp] = false;
     }
 
     public function getTemporaryFile()
@@ -65,10 +67,13 @@ class FunctionDiscovery
 
     public function filter(Callable $filter, &$wasCached = null)
     {
-        $data = require $this->tmp;
-        if (is_array($data)) {
+        if (!array_key_exists($this->tmp, self::$cache)) {
+            self::$cache[$this->tmp] = require $this->tmp;
+        }
+
+        if (is_array(self::$cache[$this->tmp])) {
             $wasCached = true;
-            return $data;
+            return self::$cache[$this->tmp];
         }
         $wasCached = false;
 
@@ -105,7 +110,7 @@ class FunctionDiscovery
         }
 
         $code = Templates::get('template')->render(compact('functions', 'files'), true);
-        File::write($this->tmp, $code);
+        self::$cache[$this->tmp] = File::writeAndInclude($this->tmp, $code);
 
         return $functions;
     }
