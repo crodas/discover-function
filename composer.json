@@ -6,7 +6,7 @@
         "crodas/notoj": ">= 1.2",
         "crodas/file-util": "^0.2"
     },
-    "version": "v0.4.2",
+    "version": "v0.4.3",
     "license": "BSD-4-Clause",
     "autoload": {
         "classmap": ["src/FunctionDiscovery.php"],
