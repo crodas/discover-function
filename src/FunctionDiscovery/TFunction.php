@@ -61,6 +61,22 @@ class TFunction
         return $this;
     }
 
+    public function getAnnotations($name)
+    {
+        if (empty($name)) {
+            return $this->annotations;
+        }
+        $ret  = array();
+        $name = str_replace('@', '', strtolower($name));
+        foreach ($this->annotations as $annotation) {
+            if ($annotation[0] === $name) {
+                $ret[] = $annotation[1];
+            }
+        }
+
+        return $ret;
+    }
+
     public function getAnnotation($name = '') {
         if (empty($name)) {
             return $this->annotations;

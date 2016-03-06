@@ -19,6 +19,42 @@ class SimpleTest extends PHPUnit_Framework_TestCase
     }
 
     /** @dependsOn testLoading */
+    public function testFunctionAnnotations()
+    {
+        $cache = new FunctionDiscovery(__DIR__, '@foo');
+        $functions = $cache->filter(function($function, $annotation) {
+            $name = $annotation->getArg();
+            if (!$name) {
+                return false;
+            }
+            $function->setName($name);
+        }, $cached);
+        $this->assertTrue($cached);
+        foreach ($functions as $function) {
+            $this->assertTrue($function());
+            foreach (['foo', 'FOO', 'FoO'] as $ann) {
+                $this->assertTrue($function->hasAnnotation($ann));
+                $this->assertTrue($function->hasAnnotation('@' . $ann));
+                $this->assertFalse($function->hasAnnotation('@' . $ann . $ann));
+                $this->assertEquals(
+                    $function->getAnnotations('@' . $ann),
+                    $function->getAnnotations($ann)
+                );
+                $ret = $function->getAnnotations($ann);
+                $this->assertNotEquals(
+                    [[]],
+                    $ret
+                );
+            }
+            $this->assertEquals($function('foobar'), 'foobar');
+        }
+        $this->assertTrue($functions['yyy1']->hasAnnotation('@auth'));
+        $this->assertTrue($functions['yyy']->hasAnnotation('auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('@auth'));
+        $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('auth'));
+    }
+
+    /** @dependsOn testLoading */
     public function testFunctionLoading()
     {
         $cache = new FunctionDiscovery(__DIR__, '@foo');
