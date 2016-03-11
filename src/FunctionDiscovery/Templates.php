@@ -121,14 +121,14 @@ namespace {
             }
 
             echo "<?php\n\n";
-            foreach(array_unique($data['files']) as $file) {
+            foreach($data['files'] as $file) {
 
                 $this->context['file'] = $file;
                 echo "    if (!is_" . (is_file($file) ? 'file': 'dir') . "(";
                 var_export($file);
                 echo ") || " . (filemtime($file)) . " < filemtime(";
                 var_export($file);
-                echo ")) {\n        return false;\n    }\n";
+                echo ")) {\n        return array('files' => array(), 'cache' => array());\n    }\n";
             }
             echo "\nreturn ";
             var_export($data);
