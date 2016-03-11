@@ -120,8 +120,8 @@ namespace {
                 ob_start();
             }
 
-            echo "<?php\n\n\$functions = array();\n\n";
-            foreach(array_unique($files) as $file) {
+            echo "<?php\n\n";
+            foreach(array_unique($data['files']) as $file) {
 
                 $this->context['file'] = $file;
                 echo "    if (!is_" . (is_file($file) ? 'file': 'dir') . "(";
@@ -130,17 +130,9 @@ namespace {
                 var_export($file);
                 echo ")) {\n        return false;\n    }\n";
             }
-            echo "\nreturn array(\n";
-            foreach($functions as $function) {
-
-                $this->context['function'] = $function;
-                echo "    ";
-                var_export($function->getName());
-                echo " => ";
-                var_export($function);
-                echo ",\n";
-            }
-            echo ");\n";
+            echo "\nreturn ";
+            var_export($data);
+            echo ";\n";
 
             if ($return) {
                 return ob_get_clean();
