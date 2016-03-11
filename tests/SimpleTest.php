@@ -104,4 +104,16 @@ class SimpleTest extends PHPUnit_Framework_TestCase
         $functions = $cache->getFunctions('@foo', $cached);
         $this->assertFalse($cached);
     }
+
+    /**
+     *  @dependsOn testCacheInvalidationFalse
+     */
+    public function testWithNoName()
+    {
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getFunctions('crawler', $cached);
+        $this->assertFalse($cached);
+        $this->assertEquals(array(0), array_keys($functions));
+        $this->AssertTrue($functions[0]());
+    }
 }
