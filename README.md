@@ -13,16 +13,8 @@ function foobar(Array $args) {
   return $args[0];
 }
 
-$apis = new FunctionDiscovery(__DIR__, '@API');
-$functions = $apis->filter(function($function, $annotation) {
-  $name = $annotation->getArg('name'); // @API <name>
-  if ($name) {
-    // no name
-    return false;
-  }
-  
-  $function->setName($name);
-});
+$apis = new FunctionDiscovery(__DIR__);
+$functions = $apis->getFunctions('@api');
 
 echo $functions['my_name']($arg1, $arg2);
 ```

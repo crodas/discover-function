@@ -42,22 +42,39 @@ use crodas\FileUtil\File;
 
 class FunctionDiscovery
 {
-    protected $annotations;
     protected $tmp;
+    protected $tmpFile;
     protected $dirs;
+    protected $fs;
     protected static $cache = array();
+    protected static $dirty = array();
 
-    public function __construct($directories, $annotations, $temporary = null)
+    public function __construct($directories, $temporary = null)
     {
-        $this->annotations = str_replace("@", "", $annotations);
         $this->dirs = (array)$directories;
-        $this->tmp  = $temporary ?: File::generateFilepath('notoj_callbackcache', $annotations, serialize($this->dirs));
+        $this->tmpFile = $temporary ?: File::generateFilepath('function-discovery', serialize($this->dirs));
+
+        if (empty(self::$cache[$this->tmpFile]) && is_file($this->tmpFile)) {
+            self::$cache[$this->tmpFile] = (array)include $this->tmpFile;
+            self::$dirty[$this->tmpFile] = false;
+        }
+
+        $this->tmp = &self::$cache[$this->tmpFile];
+    }
+
+    public function __destruct()
+    {
+        if (!empty(self::$dirty[$this->tmpFile])) {
+            $this->tmp['files'] = array_unique($this->tmp['files']);
+            $code = Templates::get('template')->render(array('data' => $this->tmp), true);
+            File::writeAndInclude($this->tmpFile, $code);
+        }
     }
     
     public function wipeCache()
     {
-        File::write($this->tmp, '');
-        self::$cache[$this->tmp] = false;
+        self::$cache[$this->tmpFile] = array('files' => array(), 'cache' => array());
+        self::$dirty[$this->tmpFile] = true;
     }
 
     public function getTemporaryFile()
@@ -65,22 +82,23 @@ class FunctionDiscovery
         return $this->tmp;
     }
 
-    public function filter(Callable $filter, &$wasCached = null)
+    public function getFunctions($ann, & $wasCached = null)
     {
-        if (!array_key_exists($this->tmp, self::$cache)) {
-            self::$cache[$this->tmp] = require $this->tmp;
-        }
+        $ann = str_replace("@", "", $ann);
 
-        if (is_array(self::$cache[$this->tmp])) {
+        if (!empty($this->tmp['cache'][$ann])) {
             $wasCached = true;
-            return self::$cache[$this->tmp];
+            return $this->tmp['cache'][$ann];
         }
-        $wasCached = false;
 
-        $functions   = array();
-        $files       = array();
-        $annotations = new Filesystem($this->dirs);
-        foreach ($annotations->get($this->annotations, 'Callable') as $annotation) {
+        if (empty($this->fs)) {
+            $this->fs = new Filesystem($this->dirs);
+        }
+
+        self::$dirty[$this->tmpFile] = true;
+        $wasCached = false;
+        $functions = array();
+        foreach ($this->fs->get($ann, 'Callable') as $annotation) {
             $function = $annotation->getObject();
             $static   = false;
             if ($function->isMethod()) {
@@ -90,10 +108,7 @@ class FunctionDiscovery
                 $callback = $function->getName();
             }
 
-            $wrapper = new TFunction($function->getFile(), $callback, $static);
-            if ($filter($wrapper, $annotation) === false && !$wrapper->getName()) {
-                continue;
-            }
+            $name = strtolower($annotation->getArg());
 
             $annotations = [];
             foreach ($annotation->getParent() as $annotation) {
@@ -102,15 +117,19 @@ class FunctionDiscovery
                     $annotation->getArgs()
                 ];
             }
+            $wrapper = new TFunction($function->getFile(), $callback, $static);
             $wrapper->setAnnotations($annotations);
+            if ($name) {
+                $functions[$name] = $wrapper;
+            } else {
+                $functions[] = $wrapper;
+            }
 
-            $functions[$wrapper->getName()] = $wrapper;
-            $files[] = dirname($function->getFile());
-            $files[] = $function->getFile();
+            $this->tmp['files'][] = $function->getFile();
+            $this->tmp['files'][] = dirname($function->getFile());
         }
 
-        $code = Templates::get('template')->render(compact('functions', 'files'), true);
-        self::$cache[$this->tmp] = File::writeAndInclude($this->tmp, $code);
+        $this->tmp['cache'][$ann] = $functions;
 
         return $functions;
     }

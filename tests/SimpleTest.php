@@ -4,15 +4,9 @@ class SimpleTest extends PHPUnit_Framework_TestCase
 {
     public function testLoading()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
         $cache->wipeCache();
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $functions = $cache->getFunctions('@foo', $cached);
         $this->assertFalse($cached);
         $this->assertTrue(is_array($functions));
         $this->assertTrue(!empty($functions));
@@ -21,14 +15,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
     /** @dependsOn testLoading */
     public function testFunctionAnnotations()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getFunctions('@foo', $cached);
         $this->assertTrue($cached);
         foreach ($functions as $function) {
             $this->assertTrue($function());
@@ -57,14 +45,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
     /** @dependsOn testLoading */
     public function testFunctionLoading()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getfunctions('@foo', $cached);
         $this->assertTrue($cached);
         foreach ($functions as $function) {
             $this->assertTrue($function());
@@ -86,14 +68,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
      */
     public function testCacheInvalidationDirectory()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getFunctions('@foo', $cached);
         $this->assertTrue($cached);
         touch(__DIR__ . '/features/' . uniqid(true) . 'php');
     }
@@ -103,14 +79,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
      */
     public function testCacheInvalidDirectoryFalse()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $cache->getFunctions('@foo', $cached);
         $this->assertFalse($cached);
     }
 
@@ -119,16 +89,9 @@ class SimpleTest extends PHPUnit_Framework_TestCase
      */
     public function testCacheInvalidation()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getFunctions('@foo', $cached);
         $this->assertTrue($cached);
-
         touch(__DIR__ . '/features/foo.php');
     }
 
@@ -137,14 +100,8 @@ class SimpleTest extends PHPUnit_Framework_TestCase
      */
     public function testCacheInvalidationFalse()
     {
-        $cache = new FunctionDiscovery(__DIR__, '@foo');
-        $functions = $cache->filter(function($function, $annotation) {
-            $name = $annotation->getArg();
-            if (!$name) {
-                return false;
-            }
-            $function->setName($name);
-        }, $cached);
+        $cache = new FunctionDiscovery(__DIR__, 'tmp.php');
+        $functions = $cache->getFunctions('@foo', $cached);
         $this->assertFalse($cached);
     }
 }
