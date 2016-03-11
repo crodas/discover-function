@@ -54,7 +54,7 @@ class FunctionDiscovery
         $this->dirs = (array)$directories;
         $this->tmpFile = $temporary ?: File::generateFilepath('function-discovery', serialize($this->dirs));
 
-        if (empty(self::$cache[$this->tmpFile])) {
+        if (empty(self::$cache[$this->tmpFile]) && is_file($this->tmpFile)) {
             self::$cache[$this->tmpFile] = (array)include $this->tmpFile;
             self::$dirty[$this->tmpFile] = false;
         }
