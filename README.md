@@ -15,6 +15,5 @@ function foobar(Array $args) {
 
 $apis = new FunctionDiscovery(__DIR__);
 $functions = $apis->getFunctions('@api');
-
 echo $functions['my_name']($arg1, $arg2);
 ```
