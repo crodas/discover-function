@@ -49,13 +49,30 @@ class FunctionDiscovery
     protected static $cache = array();
     protected static $dirty = array();
 
+    protected function load($file)
+    {
+        if (!is_file($file)) {
+            return array('files' => array(), 'cache' => array());
+        }
+
+        $data = (array)include $file;
+
+        foreach (array('files', 'cache') as $type) {
+            if (empty($data[$type])) {
+                $data[$type] = array();
+            }
+        }
+
+        return $data;
+    }
+
     public function __construct($directories, $temporary = null)
     {
         $this->dirs = (array)$directories;
         $this->tmpFile = $temporary ?: File::generateFilepath('function-discovery', serialize($this->dirs));
 
-        if (empty(self::$cache[$this->tmpFile]) && is_file($this->tmpFile)) {
-            self::$cache[$this->tmpFile] = (array)include $this->tmpFile;
+        if (empty(self::$cache[$this->tmpFile])) {
+            self::$cache[$this->tmpFile] = $this->load($this->tmpFile);
             self::$dirty[$this->tmpFile] = false;
         }
 
@@ -84,9 +101,9 @@ class FunctionDiscovery
 
     public function getFunctions($ann, & $wasCached = null)
     {
-        $ann = str_replace("@", "", $ann);
+        $ann = strtolower(str_replace("@", "", $ann));
 
-        if (!empty($this->tmp['cache'][$ann])) {
+        if (array_key_exists($ann, $this->tmp['cache'])) {
             $wasCached = true;
             return $this->tmp['cache'][$ann];
         }
@@ -108,7 +125,11 @@ class FunctionDiscovery
                 $callback = $function->getName();
             }
 
-            $name = strtolower($annotation->getArg());
+            try {
+                $name = strtolower($annotation->getArg());
+            } catch (Exception $e) {
+                $name = null;
+            }
 
             $annotations = [];
             foreach ($annotation->getParent() as $annotation) {
