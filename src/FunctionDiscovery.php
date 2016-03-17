@@ -101,9 +101,9 @@ class FunctionDiscovery
 
     public function getFunctions($ann, & $wasCached = null)
     {
-        $ann = str_replace("@", "", $ann);
+        $ann = strtolower(str_replace("@", "", $ann));
 
-        if (!empty($this->tmp['cache'][$ann])) {
+        if (array_key_exists($ann, $this->tmp['cache'])) {
             $wasCached = true;
             return $this->tmp['cache'][$ann];
         }
