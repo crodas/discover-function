@@ -35,6 +35,7 @@ class SimpleTest extends PHPUnit_Framework_TestCase
                 );
             }
             $this->assertEquals($function('foobar'), 'foobar');
+            $this->assertEquals($function('foobar'), $function->call(array('foobar')));
         }
         $this->assertTrue($functions['yyy1']->hasAnnotation('@auth'));
         $this->assertTrue($functions['yyy']->hasAnnotation('auth'));
@@ -57,10 +58,14 @@ class SimpleTest extends PHPUnit_Framework_TestCase
             }
             $this->assertEquals($function('foobar'), 'foobar');
         }
+        $this->assertFalse($function->hasAnnotation(uniqid(true)));
+        $this->assertEquals(null, $function->getAnnotation(uniqid(true)));
+        $this->assertEquals($function->getAnnotations(), $function->getAnnotation());
         $this->assertTrue($functions['yyy1']->hasAnnotation('@auth'));
         $this->assertTrue($functions['yyy']->hasAnnotation('auth'));
         $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('@auth'));
         $this->assertEquals(['auth', []], $functions['yyy']->getAnnotation('auth'));
+        $this->assertEquals(__DIR__ . '/features/foo.php', $functions['yyy1']->getFile());
     }
 
     /**
