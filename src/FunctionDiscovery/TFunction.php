@@ -61,7 +61,7 @@ class TFunction
         return $this;
     }
 
-    public function getAnnotations($name)
+    public function getAnnotations($name = '')
     {
         if (empty($name)) {
             return $this->annotations;
@@ -104,6 +104,19 @@ class TFunction
         return false;
     }
 
+    public function call(Array $arguments)
+    {
+        if (!is_callable($this->function)) {
+            require $this->file;
+        }
+        $function  = $this->function;
+        if (is_array($function) && !$this->static) {
+            $function[0] = new $function[0];
+        }
+
+        return call_user_func_array($function, $arguments);
+    }
+
     public function __invoke()
     {
         if (!is_callable($this->function)) {
@@ -130,14 +143,4 @@ class TFunction
         return $this->file;
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-        return $this;
-    }
 }
