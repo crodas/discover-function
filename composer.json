@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "crodas/notoj": ">= 1.2",
-        "crodas/file-util": "^0.2"
+        "crodas/remember": ">=0.3.3"
     },
     "version": "v0.6.1",
     "license": "BSD-4-Clause",
@@ -20,8 +20,5 @@
             "email": "crodas@php.net"
         }
     ],
-    "minimum-stability": "stable",
-    "require-dev": {
-        "crodas/simple-view-engine": "^0.1"
-    }
+    "minimum-stability": "stable"
 }

@@ -15,14 +15,14 @@ class foobar
         return true;
     }
 
-    /** @foo yyy1 @auth */
+    /** @foo("yyy1") @auth */
     public static function yyy($v = true)
     {
         return $v;
     }
 
 
-    /** @foo yyy @auth */
+    /** @foo("yyy") @auth */
     public function xxx($v = true)
     {
         return $v;

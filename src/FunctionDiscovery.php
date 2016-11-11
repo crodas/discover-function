@@ -36,122 +36,72 @@
 */
 
 use Notoj\Filesystem;
-use FunctionDiscovery\Templates;
 use FunctionDiscovery\TFunction;
-use crodas\FileUtil\File;
+use Remember\Remember;
 
 class FunctionDiscovery
 {
-    protected $tmp;
-    protected $tmpFile;
-    protected $dirs;
-    protected $fs;
-    protected static $cache = array();
-    protected static $dirty = array();
+    protected $dirs = array();
 
-    protected function load($file)
+    public function __construct($directories = null)
     {
-        if (!is_file($file)) {
-            return array('files' => array(), 'cache' => array());
+        if ($directories !== null) {
+            $this->addDirectory($directories);
         }
-
-        $data = (array)include $file;
-
-        foreach (array('files', 'cache') as $type) {
-            if (empty($data[$type])) {
-                $data[$type] = array();
-            }
-        }
-
-        return $data;
     }
 
-    public function __construct($directories, $temporary = null)
+    public function addDirectory($directories)
     {
-        $this->dirs = (array)$directories;
-        $this->tmpFile = $temporary ?: File::generateFilepath('function-discovery', serialize($this->dirs));
-
-        if (empty(self::$cache[$this->tmpFile])) {
-            self::$cache[$this->tmpFile] = $this->load($this->tmpFile);
-            self::$dirty[$this->tmpFile] = false;
-        }
-
-        $this->tmp = &self::$cache[$this->tmpFile];
+        $this->dirs = array_merge($this->dirs, (array)$directories);
     }
 
-    public function __destruct()
+    public function getFunctions($ann, &$isCached = null)
     {
-        if (!empty(self::$dirty[$this->tmpFile])) {
-            $this->tmp['files'] = array_unique($this->tmp['files']);
-            $code = Templates::get('template')->render(array('data' => $this->tmp), true);
-            File::writeAndInclude($this->tmpFile, $code);
-        }
-    }
-    
-    public function wipeCache()
-    {
-        self::$cache[$this->tmpFile] = array('files' => array(), 'cache' => array());
-        self::$dirty[$this->tmpFile] = true;
-    }
+        $ann    = strtolower(str_replace("@", "", $ann));
+        $dirs   = array_merge(array($ann), $this->dirs);
+        $isCached = true;
 
-    public function getTemporaryFile()
-    {
-        return $this->tmp;
-    }
+        $loader = Remember::wrap('function-discovery', function($args) use (&$isCached) {
+            $functions = array();
+            $isCached = false;
+            $query  = array_shift($args);
+            $fs = new Filesystem($args);
+            foreach ($fs->get($query, 'Callable') as $annotation) {
+                $function = $annotation->getObject();
+                $static   = false;
+                if ($function->isMethod()) {
+                    $callback = [$function->getClass()->getName(), $function->getName()];
+                    $static   = $function->isStatic();
+                } else {
+                    $callback = $function->getName();
+                }
 
-    public function getFunctions($ann, & $wasCached = null)
-    {
-        $ann = strtolower(str_replace("@", "", $ann));
+                try {
+                    $name = strtolower($annotation->getArg());
+                } catch (Exception $e) {
+                    $name = null;
+                }
 
-        if (array_key_exists($ann, $this->tmp['cache'])) {
-            $wasCached = true;
-            return $this->tmp['cache'][$ann];
-        }
-
-        if (empty($this->fs)) {
-            $this->fs = new Filesystem($this->dirs);
-        }
-
-        self::$dirty[$this->tmpFile] = true;
-        $wasCached = false;
-        $functions = array();
-        foreach ($this->fs->get($ann, 'Callable') as $annotation) {
-            $function = $annotation->getObject();
-            $static   = false;
-            if ($function->isMethod()) {
-                $callback = [$function->getClass()->getName(), $function->getName()];
-                $static   = $function->isStatic();
-            } else {
-                $callback = $function->getName();
+                $annotations = [];
+                foreach ($annotation->getParent() as $annotation) {
+                    $annotations[] = [
+                        strtolower($annotation->getName()),
+                        $annotation->getArgs()
+                    ];
+                }
+                
+                $wrapper = new TFunction($function->getFile(), $callback, $static);
+                $wrapper->setAnnotations($annotations);
+                if ($name) {
+                    $functions[$name] = $wrapper;
+                } else {
+                    $functions[] = $wrapper;
+                }
             }
 
-            try {
-                $name = strtolower($annotation->getArg());
-            } catch (Exception $e) {
-                $name = null;
-            }
+            return $functions;
+        });
 
-            $annotations = [];
-            foreach ($annotation->getParent() as $annotation) {
-                $annotations[] = [
-                    strtolower($annotation->getName()),
-                    $annotation->getArgs()
-                ];
-            }
-            $wrapper = new TFunction($function->getFile(), $callback, $static);
-            $wrapper->setAnnotations($annotations);
-            if ($name) {
-                $functions[$name] = $wrapper;
-            } else {
-                $functions[] = $wrapper;
-            }
-
-            $this->tmp['files'][] = $function->getFile();
-            $this->tmp['files'][] = dirname($function->getFile());
-        }
-
-        $this->tmp['cache'][$ann] = $functions;
-
-        return $functions;
+        return $loader($dirs);
     }
 }
