@@ -20,5 +20,8 @@
             "email": "crodas@php.net"
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "require-dev": {
+        "crodas/phpunit-compat": "^1.7"
+    }
 }
